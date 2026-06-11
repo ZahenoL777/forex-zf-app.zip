@@ -1,0 +1,26 @@
+include ':app'
+
+def localPropertiesFile = new File(rootDir, 'local.properties')
+def properties = new Properties()
+
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader -> properties.load(reader) }
+}
+
+def flutterSdkPath = properties.getProperty('flutter.sdk')
+if (flutterSdkPath == null) {
+    throw new GradleException('Flutter SDK path not found')
+}
+
+def flutterProjectRoot = rootDir.parentFile.absoluteFile
+def plugins = new Properties()
+def pluginsFile = new File(flutterProjectRoot, '.flutter-plugins')
+if (pluginsFile.exists()) {
+    pluginsFile.withReader('UTF-8') { reader -> plugins.load(reader) }
+}
+
+plugins.each { name, path ->
+    def pluginDirectory = new File(path).parentFile.parentFile
+    include ":$name"
+    project(":$name").projectDir = pluginDirectory
+}
